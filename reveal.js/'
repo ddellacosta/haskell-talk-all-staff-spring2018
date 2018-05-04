@@ -1,0 +1,219 @@
+
+## A Rushed but Enthusiastic Intro to Haskell
+
+
+
+### Haskell for Clojure Programmers
+
+#### What is already familiar to us? <!-- .element: class="fragment" data-fragment-index="1" -->
+
+
+* Functions are first-class (lambdas, higher-order functions, etc.) <!-- .element: class="fragment" data-fragment-index="2" -->
+* Immutable Data (maps, lists, vectors, arrays, etc.) <!-- .element: class="fragment" data-fragment-index="3" -->
+* A lot of thought has gone into managing state (because Haskell is pure) <!-- .element: class="fragment" data-fragment-index="4" -->
+* "How is data shaped" <!-- .element: class="fragment" data-fragment-index="5" -->
+* Type Classes are reasonably similar to Protocols (Ad-hoc Polymorphism) <!-- .element: class="fragment" data-fragment-index="6" -->
+* Mapping, Reducing, etc. (Parametric Polymorphism (-ish)) <!-- .element: class="fragment" data-fragment-index="7" -->
+* Laziness* <!-- .element: class="fragment" data-fragment-index="8" -->
+
+(*Kinda sorta) <!-- .element: class="fragment haskell-talk-small" data-fragment-index="9" -->
+
+
+
+
+### Haskell for Clojure Programmers
+
+#### What is new to us? <!-- .element: class="fragment" data-fragment-index="1" -->
+
+* The type system! <!-- .element: class="fragment" data-fragment-index="2" -->
+* Tons of algebraic structures/category theoretic concepts in core libraries <!-- .element: class="fragment" data-fragment-index="3" -->
+* "Built-in" Recursion <!-- .element: class="fragment" data-fragment-index="4" -->
+* Pattern Matching* <!-- .element: class="fragment" data-fragment-index="5" -->
+* Laziness* <!-- .element: class="fragment" data-fragment-index="6" -->
+
+(*Kinda sorta) <!-- .element: class="fragment haskell-talk-small" data-fragment-index="7" -->
+
+
+
+
+### Types
+
+#### Why should we care? <!-- .element: class="fragment" data-fragment-index="1" -->
+
+(Everything in this section probably applies to any language in the ML family, I'll note otherwise) <!-- .element: class="fragment haskell-talk-small" data-fragment-index="2" -->
+
+(Definitely not Java though) <!-- .element: class="fragment haskell-talk-super-small" data-fragment-index="3" -->
+
+
+### Clarity and Insight Into Our Programs
+
+Types can tell us things about our programs that are otherwise harder to understand in a system without a (good) static type system.
+
+
+### Safety
+
+With a static type system you can catch many errors at compile time. 
+
+
+### Developer Efficiency and Automation
+
+With type inference, you get a lot of this "for free"--you don't have to annotate functions (although we probably will because it is so useful), refactoring with safety is a breeze, and the type checker can even help you understand your values before you've figured them out for yourself.
+
+
+### Encode Behavior in Types!
+
+Taking all of the advantages listed above, you can put all of that together and get something amazing: automated validation of behavior at compile-time. (http://dev.stephendiehl.com/types_behavior.pdf)
+
+(This is probably the most Haskell-specific point, because of how insanely deep the type system is.) <!-- .element: class="fragment haskell-talk-small" data-fragment-index="1" -->
+
+
+
+
+### What sucks about Haskell?
+
+* Strings <!-- .element: class="fragment" data-fragment-index="1" -->
+* Records <!-- .element: class="fragment" data-fragment-index="2" -->
+* (Consistency of) Documentation <!-- .element: class="fragment" data-fragment-index="3" -->
+* OMFG the learning curve <!-- .element: class="fragment" data-fragment-index="4" -->
+* Laziness* <!-- .element: class="fragment" data-fragment-index="5" -->
+
+(*Kinda sorta) <!-- .element: class="fragment" data-fragment-index="6" -->
+
+
+
+### OMG Just show me some code already
+
+![judge judy says hurry it up](https://i.imgur.com/XQzGQr5.gif)
+
+Okay fine let's start with some basic type-system wrangling jeez chill out <!-- .element: class="fragment haskell-talk-small" data-fragment-index="1" -->
+
+
+
+
+### Values and Their Types
+
+```Haskell
+-- The default strings are lists ([]) of Chars
+λ :type "hi" :: [Char]
+"hi" :: [Char] :: [Char]
+λ :t "hi" ++ " world"
+"hi" ++ " world" :: [Char]
+
+-- We can use an infix operator in the prefix position using parens
+-- (Note how we get partial application for free):
+λ :t (++) "hi"
+(++) "hi" :: [Char] -> [Char]
+```
+
+
+### Values and Their Types
+
+```Haskell
+λ :t (++)
+-- a is a type variable - so this is a list ([]) of 'a'
+(++) :: [a] -> [a] -> [a]
+
+-- But look--once we apply a value, we force our 'a' to be a String!
+λ :t (++) "hi"
+(++) "hi" :: [Char] -> [Char]
+
+-- ...but we can also do this, because all we need is a list of 'a':
+λ :t (++) [1,2]
+(++) [1,2] :: Num a => [a] -> [a]
+λ (++) [1,2] [3]
+[1,2,3]
+λ
+```
+
+
+
+### Numbers
+
+```Haskell
+λ :type 1
+1 :: Num p => p
+λ :type 1 :: Int
+1 :: Int :: Int
+λ :t 2.45 :: Int
+
+<interactive>:1:1: warning: [-Wdeferred-type-errors]
+    • No instance for (Fractional Int) arising from the literal ‘2.45’
+    • In the expression: 2.45 :: Int
+2.45 :: Int :: Int
+λ :t 2.45 :: Double
+2.45 :: Double :: Double
+λ 
+```
+
+
+### Strings
+
+```Haskell
+λ :t "foo"
+"foo" :: Data.String.IsString p => p
+λ :t "foo" :: String
+"foo" :: String :: String
+λ :t "foo" :: [Char]
+"foo" :: [Char] :: [Char]
+λ :t "foo" :: Text
+
+<interactive>:1:10: error:
+    Not in scope: type constructor or class ‘Text’
+λ :m +Data.Text
+λ :t "foo" :: Text
+"foo" :: Text :: Text
+λ 
+```
+
+
+### Algebraic Data Types
+
+A Sum type (think "or")
+
+```Haskell
+data PossiblyAn a = ThisHereIsAn a | GotNada
+  deriving (Show)
+
+checkIt (ThisHereIsAn n) = "We got a " ++ show n
+checkIt GotNada = "Oh sorry we got no values today"
+
+λ checkIt $ ThisHereIsAn "Foo"
+"We got a \"Foo\""
+λ checkIt $ GotNada
+"Oh sorry we got no values today"
+```
+
+
+### Algebraic Data Types
+
+A Product type (think "and")
+
+```Haskell
+data Pair a b = MakePair a b deriving Show
+
+firstInPair (MakePair x y) = x
+secondInPair (MakePair x y) = y
+```
+
+
+### Algebraic Data Types
+
+Records
+
+```Haskell
+data Color = Red | Blue | Yellow | White | Black
+  deriving (Show)
+
+data Person = Person { name :: String
+                     , age :: Int
+                     , favoriteColor :: Color
+                     }
+  deriving (Show)
+
+λ Person "Bob" 35 Blue
+Person {name = "Bob", age = 35, favoriteColor = Blue}
+λ
+```
+
+
+
