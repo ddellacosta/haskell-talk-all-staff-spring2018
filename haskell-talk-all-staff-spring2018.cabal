@@ -1,0 +1,22 @@
+name:                haskell-talk-all-staff-spring2018
+version:             0.1.0.0
+-- synopsis:
+-- description:
+homepage:            https://github.com/ddellacosta/haskell-talk-all-staff-spring2018#readme
+license:             BSD3
+license-file:        LICENSE
+author:              Dave Della Costa
+maintainer:          ddellacosta@gmail.com
+copyright:           Dave Della Costa 2016
+category:            many
+build-type:          Simple
+cabal-version:       >=1.10
+extra-source-files:  README.md
+
+executable haskell-talk-all-staff-spring2018
+  hs-source-dirs:      src
+  main-is:             Main.hs
+  default-language:    Haskell2010
+  build-depends:       base >= 4.7 && < 5
+                     , text
+                     , mtl
