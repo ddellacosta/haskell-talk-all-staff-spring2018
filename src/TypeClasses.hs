@@ -8,35 +8,30 @@ import Data.Char
 
 -- Example 1
 
---data Circle = Circle { radius :: Double }
---  deriving Show
---
---data Rect = Rect { height :: Double
---                 , width :: Double
---                 }
---  deriving Show
---
---data Triangle = Triangle { base :: Double
---                         , height :: Double
---                         }
---  deriving Show
+data Circle = Circle { radius :: Double }
+  deriving Show
 
-data Circle a = Circle { radius :: a }
+data Rect = Rect { height :: Double
+                 , width :: Double
+                 }
+  deriving Show
+
+data Triangle = Triangle { base :: Double
+                         , height :: Double
+                         }
   deriving Show
 
 class HasArea e where
-  area :: (Num n) => e -> n
-  -- area :: e -> Double
+  area :: e -> Double
 
-instance HasArea (Circle n) where
-   area (Circle r) = (r ^ 2)
-   -- area (Circle r) = undefined -- (r ^ 2) * pi
+instance HasArea Circle where
+   area (Circle r) = (r ^ 2) * pi
  
--- instance HasArea Rect where
---    area (Rect h w) = h * w
--- 
--- instance HasArea Triangle where
---    area (Triangle b h) = 0.5 * b * h
+instance HasArea Rect where
+   area (Rect h w) = h * w
+
+instance HasArea Triangle where
+   area (Triangle b h) = 0.5 * b * h
 
 
 -- Example 2
